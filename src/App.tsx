@@ -2,11 +2,11 @@ import React from "react";
 import papa from "papaparse";
 import { css } from "@emotion/css";
 
-type CSVObject = Record<string, string>;
+type Reservation = Record<string, string>;
 
-const courseColumnName = "課程" as const;
+const courseColumnNamePrefix = "課程" as const;
 const courseColumnNameExclude = "課程選擇" as const;
-const cancelledCourseNumberColumnName = "取消課程編號" as const;
+const cancelledCourseColumnName = "取消課程編號" as const;
 const emailColumnName = "電子郵件地址" as const;
 const includedColumns = ["時間戳記", "稱呼", "電子郵件地址"] as const;
 const excludedColumns = [] as const;
@@ -43,26 +43,31 @@ const classes = {
 };
 
 function App() {
-  const [csvData, setCSVData] = React.useState<Array<CSVObject>>([{}]);
+  const [reservations, setReservations] = React.useState<Array<Reservation>>([
+    {},
+  ]);
   const [courseName, setCourseName] = React.useState("");
 
-  const handleCSVFile = React.useCallback<
-    React.ChangeEventHandler<HTMLInputElement>
-  >((event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    papa.parse(file, {
-      complete: completeParse,
-      header: true,
-    });
-  }, []);
   const completeParse = React.useCallback(
-    (result: papa.ParseResult<CSVObject>) => {
+    (result: papa.ParseResult<Reservation>) => {
       console.log("[DEBUG]", result.data);
-      setCSVData(result.data);
+      setReservations(result.data);
     },
     []
+  );
+  const handleCSVFile = React.useCallback<
+    React.ChangeEventHandler<HTMLInputElement>
+  >(
+    (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      papa.parse(file, {
+        complete: completeParse,
+        header: true,
+      });
+    },
+    [completeParse]
   );
   const handleCourseName = React.useCallback<
     React.ChangeEventHandler<HTMLSelectElement>
@@ -71,39 +76,41 @@ function App() {
   }, []);
 
   const courseNames = new Set<string>();
-  csvData.forEach((d) => {
-    Object.keys(d)
+  reservations.forEach((row) => {
+    Object.keys(row)
       .filter(
-        (v) => v !== courseColumnNameExclude && v.startsWith(courseColumnName)
+        (col) =>
+          col !== courseColumnNameExclude &&
+          col.startsWith(courseColumnNamePrefix)
       )
-      .map((v) => courseNames.add(d[v]));
+      .map((col) => courseNames.add(row[col]));
   });
-  const columns = Object.keys(csvData[0]).filter(
-    (v) =>
-      includedColumns.some((inc) => v.startsWith(inc)) &&
-      excludedColumns.every((exc) => !v.startsWith(exc))
+  const displayColumns = Object.keys(reservations[0]).filter(
+    (col) =>
+      includedColumns.some((inc) => col.startsWith(inc)) &&
+      excludedColumns.every((exc) => !col.startsWith(exc))
   );
-  const header = (
+  const headerElement = (
     <tr>
-      {columns.map((name, i) => (
+      {displayColumns.map((col, i) => (
         <td className={classes.tableHeaderCell} key={i.toString()}>
-          {name}
+          {col}
         </td>
       ))}
     </tr>
   );
-  const dataRows = csvData
-    .filter((d) => Object.values(d).some((v) => v === courseName))
-    .filter((d) => {
-      const cancelledCourses = d[cancelledCourseNumberColumnName]
+  const displayRows = reservations
+    .filter((row) => Object.values(row).some((val) => val === courseName))
+    .filter((row) => {
+      const cancelledCourses = row[cancelledCourseColumnName]
         .split(",")
-        .filter((v) => v !== "");
-      return cancelledCourses.every((name) => d[name] !== courseName);
+        .filter((val) => val !== "");
+      return cancelledCourses.every((col) => row[col] !== courseName);
     });
-  const rows = dataRows.map((d, i) => (
+  const rowElements = displayRows.map((row, i) => (
     <tr key={i.toString()}>
-      {columns.map((name) => (
-        <td>{d[name]}</td>
+      {displayColumns.map((col) => (
+        <td>{row[col]}</td>
       ))}
     </tr>
   ));
@@ -112,10 +119,10 @@ function App() {
   >(
     (e) => {
       navigator.clipboard.writeText(
-        dataRows.map((d) => d[emailColumnName]).join()
+        displayRows.map((row) => row[emailColumnName]).join()
       );
     },
-    [dataRows]
+    [displayRows]
   );
   return (
     <div className={classes.root}>
@@ -133,13 +140,13 @@ function App() {
               <option>{name}</option>
             ))}
         </select>
-        <span className={classes.marginRight}>{rows.length}人</span>
+        <span className={classes.marginRight}>{rowElements.length}人</span>
         <button onClick={handleCopyEmails}>Copy Emails</button>
       </div>
       <div className={classes.content}>
         <table className={classes.table}>
-          <thead>{header}</thead>
-          <tbody>{rows}</tbody>
+          <thead>{headerElement}</thead>
+          <tbody>{rowElements}</tbody>
         </table>
       </div>
     </div>
