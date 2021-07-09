@@ -80,6 +80,7 @@
     "test": "node scripts/test.js",
     "publish_gh": "yarn build && node scripts/publish.js"
   },
+  "homepage": "http://marsonmao.github.io/rna-tool",
   "eslintConfig": {
     "extends": [
       "react-app",
