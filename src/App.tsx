@@ -43,30 +43,27 @@ const classes = {
 };
 
 function App() {
-  const inputRef = React.useRef(null);
-  const [csvFile, setCSVFile] = React.useState<File>();
   const [csvData, setCSVData] = React.useState<Array<CSVObject>>([{}]);
   const [courseName, setCourseName] = React.useState("");
 
   const handleCSVFile = React.useCallback<
     React.ChangeEventHandler<HTMLInputElement>
   >((event) => {
-    setCSVFile(event.target.files?.[0]);
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    papa.parse(file, {
+      complete: completeParse,
+      header: true,
+    });
   }, []);
   const completeParse = React.useCallback(
     (result: papa.ParseResult<CSVObject>) => {
-      console.log(result.data);
+      console.log("[DEBUG]", result.data);
       setCSVData(result.data);
     },
     []
   );
-  const parseCSV = React.useCallback(() => {
-    if (!csvFile) return;
-    papa.parse(csvFile, {
-      complete: completeParse,
-      header: true,
-    });
-  }, [csvFile, completeParse]);
   const handleCourseName = React.useCallback<
     React.ChangeEventHandler<HTMLSelectElement>
   >((e) => {
@@ -126,13 +123,9 @@ function App() {
         <input
           className={classes.marginRight}
           type="file"
-          ref={inputRef}
           name="file"
           onChange={handleCSVFile}
         />
-        <button className={classes.marginRight} onClick={parseCSV}>
-          Parse
-        </button>
         <select className={classes.marginRight} onChange={handleCourseName}>
           {Array.from(courseNames)
             .sort()
