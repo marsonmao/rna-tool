@@ -15,6 +15,30 @@ const classes = {
   root: css`
     width: 100%;
     height: 100%;
+    display: flex;
+    flex-direction: column;
+  `,
+  topBar: css`
+    width: 100%;
+    height: 64px;
+    padding: 12px 24px;
+    box-shadow: 0px -10px 20px 0px #000;
+  `,
+  content: css`
+    width: 100%;
+    flex: 1 0 64px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 12px 24px;
+  `,
+  marginRight: css`
+    margin-right: 8px;
+  `,
+  table: css`
+    width: 100%;
+  `,
+  tableHeaderCell: css`
+    border-bottom: 1px solid black;
   `,
 };
 
@@ -65,7 +89,9 @@ function App() {
   const header = (
     <tr>
       {columns.map((name, i) => (
-        <td key={i.toString()}>{name}</td>
+        <td className={classes.tableHeaderCell} key={i.toString()}>
+          {name}
+        </td>
       ))}
     </tr>
   );
@@ -96,21 +122,33 @@ function App() {
   );
   return (
     <div className={classes.root}>
-      <input type="file" ref={inputRef} name="file" onChange={handleCSVFile} />
-      <button onClick={parseCSV}>Parse</button>
-      <select onChange={handleCourseName}>
-        {Array.from(courseNames)
-          .sort()
-          .map((name) => (
-            <option>{name}</option>
-          ))}
-      </select>
-      <div>{rows.length}人</div>
-      <button onClick={handleCopyEmails}>Copy Emails</button>
-      <table>
-        <thead>{header}</thead>
-        <tbody>{rows}</tbody>
-      </table>
+      <div className={classes.topBar}>
+        <input
+          className={classes.marginRight}
+          type="file"
+          ref={inputRef}
+          name="file"
+          onChange={handleCSVFile}
+        />
+        <button className={classes.marginRight} onClick={parseCSV}>
+          Parse
+        </button>
+        <select className={classes.marginRight} onChange={handleCourseName}>
+          {Array.from(courseNames)
+            .sort()
+            .map((name) => (
+              <option>{name}</option>
+            ))}
+        </select>
+        <span className={classes.marginRight}>{rows.length}人</span>
+        <button onClick={handleCopyEmails}>Copy Emails</button>
+      </div>
+      <div className={classes.content}>
+        <table className={classes.table}>
+          <thead>{header}</thead>
+          <tbody>{rows}</tbody>
+        </table>
+      </div>
     </div>
   );
 }
