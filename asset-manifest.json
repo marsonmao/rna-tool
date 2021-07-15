@@ -1,22 +1,22 @@
 {
   "files": {
-    "main.css": "/rna-tool/static/css/main.c18cf453.chunk.css",
-    "main.js": "/rna-tool/static/js/main.b7e1c895.chunk.js",
-    "main.js.map": "/rna-tool/static/js/main.b7e1c895.chunk.js.map",
+    "main.css": "/rna-tool/static/css/main.b96cdee2.chunk.css",
+    "main.js": "/rna-tool/static/js/main.671a6fe0.chunk.js",
+    "main.js.map": "/rna-tool/static/js/main.671a6fe0.chunk.js.map",
     "runtime-main.js": "/rna-tool/static/js/runtime-main.21837946.js",
     "runtime-main.js.map": "/rna-tool/static/js/runtime-main.21837946.js.map",
-    "static/js/2.dca314b5.chunk.js": "/rna-tool/static/js/2.dca314b5.chunk.js",
-    "static/js/2.dca314b5.chunk.js.map": "/rna-tool/static/js/2.dca314b5.chunk.js.map",
+    "static/js/2.2eb8742c.chunk.js": "/rna-tool/static/js/2.2eb8742c.chunk.js",
+    "static/js/2.2eb8742c.chunk.js.map": "/rna-tool/static/js/2.2eb8742c.chunk.js.map",
     "static/js/3.328b9211.chunk.js": "/rna-tool/static/js/3.328b9211.chunk.js",
     "static/js/3.328b9211.chunk.js.map": "/rna-tool/static/js/3.328b9211.chunk.js.map",
     "index.html": "/rna-tool/index.html",
-    "static/css/main.c18cf453.chunk.css.map": "/rna-tool/static/css/main.c18cf453.chunk.css.map",
-    "static/js/2.dca314b5.chunk.js.LICENSE.txt": "/rna-tool/static/js/2.dca314b5.chunk.js.LICENSE.txt"
+    "static/css/main.b96cdee2.chunk.css.map": "/rna-tool/static/css/main.b96cdee2.chunk.css.map",
+    "static/js/2.2eb8742c.chunk.js.LICENSE.txt": "/rna-tool/static/js/2.2eb8742c.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.21837946.js",
-    "static/js/2.dca314b5.chunk.js",
-    "static/css/main.c18cf453.chunk.css",
-    "static/js/main.b7e1c895.chunk.js"
+    "static/js/2.2eb8742c.chunk.js",
+    "static/css/main.b96cdee2.chunk.css",
+    "static/js/main.671a6fe0.chunk.js"
   ]
 }
