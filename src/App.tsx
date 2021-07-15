@@ -105,6 +105,7 @@ function App() {
     setRemoveDuplicateEmail(v => !v);
   }, []);
 
+  // Generate data
   const courseNames = React.useMemo(() => {
     const result = new Set<string>();
     reservations.forEach((row) => {
@@ -127,15 +128,6 @@ function App() {
     if (email !== "") result.push(courseSelectionColumnName);
     return result;
   }, [reservations, email])
-  const headerElement = (
-    <tr>
-      {displayColumns.map((col, i) => (
-        <td className={classes.tableHeaderCell} key={i.toString()}>
-          {col}
-        </td>
-      ))}
-    </tr>
-  );
   const displayRows = React.useMemo(() => {
     let result = reservations
       .filter((row) => courseName === "" || Object.values(row).some((val) => val === courseName))
@@ -160,6 +152,17 @@ function App() {
     }
     return result;
   }, [reservations, courseName, email, removeDuplicateEmail]);
+  
+  // Render
+  const headerElement = (
+    <tr>
+      {displayColumns.map((col, i) => (
+        <td className={classes.tableHeaderCell} key={i.toString()}>
+          {col}
+        </td>
+      ))}
+    </tr>
+  );
   const rowElements = displayRows.map((row, i) => (
     <tr key={i.toString()}>
       {displayColumns.map((col, j) => (
@@ -177,6 +180,7 @@ function App() {
     },
     [displayRows]
   );
+
   return (
     <div className={classes.root}>
       <div className={classes.topBar}>
