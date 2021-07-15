@@ -8,8 +8,11 @@ const courseColumnNamePrefix = "課程" as const;
 const courseColumnNameExclude = "課程選擇" as const;
 const cancelledCourseColumnName = "取消課程編號" as const;
 const emailColumnName = "電子郵件地址" as const;
-const includedColumns = ["時間戳記", "稱呼", "電子郵件地址"] as const;
+const includedColumns = ["時間戳記", "稱呼", "電子郵件地址", "上課方案"] as const;
 const excludedColumns = [] as const;
+const transformers: Record<string, (rawValue: string) => string> = {
+  "上課方案": (rawValue: string) => rawValue !== '新生體驗' ? '' : rawValue,
+}
 
 const classes = {
   root: css`
@@ -43,10 +46,10 @@ const classes = {
 };
 
 function App() {
-  const [reservations, setReservations] = React.useState<Array<Reservation>>([
-    {},
-  ]);
+  const [reservations, setReservations] = React.useState<Array<Reservation>>([]);
   const [courseName, setCourseName] = React.useState("");
+  const [email, setEmail] = React.useState("");
+  const [removeDuplicateEmail, setRemoveDuplicateEmail] = React.useState(false);
 
   const completeParse = React.useCallback(
     (result: papa.ParseResult<Reservation>) => {
@@ -73,6 +76,18 @@ function App() {
     React.ChangeEventHandler<HTMLSelectElement>
   >((e) => {
     setCourseName(e.target.value);
+    setEmail("");
+  }, []);
+  const handleEmail = React.useCallback<
+    React.ChangeEventHandler<HTMLInputElement>
+  >((e) => {
+    setEmail(e.target.value);
+    setCourseName("");
+  }, []);
+  const handleRemoveDuplicate = React.useCallback<
+    React.ChangeEventHandler<HTMLInputElement>
+  >((e) => {
+    setRemoveDuplicateEmail(v => !v);
   }, []);
 
   const courseNames = new Set<string>();
@@ -85,7 +100,7 @@ function App() {
       )
       .map((col) => courseNames.add(row[col]));
   });
-  const displayColumns = Object.keys(reservations[0]).filter(
+  const displayColumns = Object.keys(reservations[0] || {}).filter(
     (col) =>
       includedColumns.some((inc) => col.startsWith(inc)) &&
       excludedColumns.every((exc) => !col.startsWith(exc))
@@ -99,18 +114,34 @@ function App() {
       ))}
     </tr>
   );
-  const displayRows = reservations
-    .filter((row) => Object.values(row).some((val) => val === courseName))
-    .filter((row) => {
-      const cancelledCourses = row[cancelledCourseColumnName]
-        .split(",")
-        .filter((val) => val !== "");
-      return cancelledCourses.every((col) => row[col] !== courseName);
-    });
+  const displayRows = React.useMemo(() => {
+    let result = reservations
+      .filter((row) => courseName === "" || Object.values(row).some((val) => val === courseName))
+      .filter((row) => {
+        const cancelledCourses = row[cancelledCourseColumnName]
+          .split(",")
+          .filter((val) => val !== "");
+        return cancelledCourses.every((col) => row[col] !== courseName);
+      }).filter((row) => email === "" || row[emailColumnName] === email);
+    if (removeDuplicateEmail) {
+      const uniqueEmails = new Set();
+      result.reverse();
+      for (let i = 0; i < result.length; ++i) {
+        if (uniqueEmails.has(result[i][emailColumnName])) {
+          result[i] = {};
+        } else {
+          uniqueEmails.add(result[i][emailColumnName]);
+        }
+      }
+      result = result.filter(row => Object.keys(row).length !== 0);
+      result.reverse();
+    }
+    return result;
+  }, [reservations, courseName, email, removeDuplicateEmail]);
   const rowElements = displayRows.map((row, i) => (
     <tr key={i.toString()}>
-      {displayColumns.map((col) => (
-        <td>{row[col]}</td>
+      {displayColumns.map((col, j) => (
+        <td key={j.toString()}>{transformers[col] ? transformers[col](row[col]) : row[col]}</td>
       ))}
     </tr>
   ));
@@ -133,15 +164,17 @@ function App() {
           name="file"
           onChange={handleCSVFile}
         />
-        <select className={classes.marginRight} onChange={handleCourseName}>
+        <select className={classes.marginRight} value={courseName} onChange={handleCourseName}>
           {Array.from(courseNames)
             .sort()
-            .map((name) => (
-              <option>{name}</option>
+            .map((name, i) => (
+              <option key={i.toString()}>{name}</option>
             ))}
         </select>
         <span className={classes.marginRight}>{rowElements.length}人</span>
-        <button onClick={handleCopyEmails}>Copy Emails</button>
+        <button className={classes.marginRight} onClick={handleCopyEmails}>Copy Emails</button>
+        <input className={classes.marginRight} placeholder="搜尋email" value={email} onChange={handleEmail} />
+        <label className={classes.marginRight}>消除重複<input type="checkbox" checked={removeDuplicateEmail} onChange={handleRemoveDuplicate} /></label>
       </div>
       <div className={classes.content}>
         <table className={classes.table}>
