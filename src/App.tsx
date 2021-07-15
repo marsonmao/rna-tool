@@ -4,14 +4,24 @@ import { css } from "@emotion/css";
 
 type Reservation = Record<string, string>;
 
+// For collecting course names
 const courseColumnNamePrefix = "課程" as const;
 const courseColumnNameExclude = "課程選擇" as const;
+
+// Some column name constant
 const cancelledCourseColumnName = "取消課程編號" as const;
 const emailColumnName = "電子郵件地址" as const;
+const courseSelectionColumnName = "課程選擇" as const;
+
+// Display constant
 const includedColumns = ["時間戳記", "稱呼", "電子郵件地址", "上課方案"] as const;
 const excludedColumns = [] as const;
 const transformers: Record<string, (rawValue: string) => string> = {
   "上課方案": (rawValue: string) => rawValue !== '新生體驗' ? '' : rawValue,
+  "課程選擇": (rawValue: string) => {
+    console.log(rawValue, rawValue.split(', '), rawValue.split(',').map(v => `${v}\n`).join(''));
+    return rawValue.split(', ').map(v => `${v}\n`).join('');
+  },
 }
 
 const classes = {
@@ -41,6 +51,11 @@ const classes = {
     width: 100%;
   `,
   tableHeaderCell: css`
+    border-bottom: 1px solid black;
+  `,
+  tableDataCell: css`
+    vertical-align: top;
+    white-space: pre-line;
     border-bottom: 1px solid black;
   `,
 };
@@ -90,21 +105,28 @@ function App() {
     setRemoveDuplicateEmail(v => !v);
   }, []);
 
-  const courseNames = new Set<string>();
-  reservations.forEach((row) => {
-    Object.keys(row)
-      .filter(
-        (col) =>
-          col !== courseColumnNameExclude &&
-          col.startsWith(courseColumnNamePrefix)
-      )
-      .map((col) => courseNames.add(row[col]));
-  });
-  const displayColumns = Object.keys(reservations[0] || {}).filter(
-    (col) =>
-      includedColumns.some((inc) => col.startsWith(inc)) &&
-      excludedColumns.every((exc) => !col.startsWith(exc))
-  );
+  const courseNames = React.useMemo(() => {
+    const result = new Set<string>();
+    reservations.forEach((row) => {
+      Object.keys(row)
+        .filter(
+          (col) =>
+            col !== courseColumnNameExclude &&
+            col.startsWith(courseColumnNamePrefix)
+        )
+        .map((col) => result.add(row[col]));
+    });
+    return result;
+  }, [reservations]);
+  const displayColumns = React.useMemo(() => {
+    const result = Object.keys(reservations[0] || {}).filter(
+      (col) =>
+        includedColumns.some((inc) => col.startsWith(inc)) &&
+        excludedColumns.every((exc) => !col.startsWith(exc))
+    );
+    if (email !== "") result.push(courseSelectionColumnName);
+    return result;
+  }, [reservations, email])
   const headerElement = (
     <tr>
       {displayColumns.map((col, i) => (
@@ -141,7 +163,7 @@ function App() {
   const rowElements = displayRows.map((row, i) => (
     <tr key={i.toString()}>
       {displayColumns.map((col, j) => (
-        <td key={j.toString()}>{transformers[col] ? transformers[col](row[col]) : row[col]}</td>
+        <td key={j.toString()} className={classes.tableDataCell}>{transformers[col] ? transformers[col](row[col]) : row[col]}</td>
       ))}
     </tr>
   ));
