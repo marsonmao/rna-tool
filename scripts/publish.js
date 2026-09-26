@@ -1,11 +1,11 @@
-var ghpages = require("gh-pages");
+import ghpages from "gh-pages";
 
 ghpages.publish(
-  "build",
+  "dist",
   {
     message: "Auto-generated commit",
   },
   function (err) {
-    console.error("publishing to gh-pages error", err);
+    if (err) console.error("publishing to gh-pages error", err);
   }
 );
